@@ -223,6 +223,38 @@
     .guide-overlay button:hover {
       background: #4338ca;
     }
+
+    .settings-panel {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 50;
+    }
+
+    .settings-panel label {
+      display: block;
+      font-size: 0.85rem;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+
+    .settings-panel input[type="number"] {
+      width: 60px;
+      padding: 0.4rem;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    .settings-panel .info {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -276,6 +308,11 @@
     <button onclick="document.getElementById('guide').style.display='none'">Got it</button>
   </div>
   
+  <div class="settings-panel">
+    <label>Columns on node: <input type="number" id="nodeColumns" value="3" min="0" max="5"></label>
+    <div class="info">Cols 3+nodeColumns shown on node, rest on hover</div>
+  </div>
+  
   <svg id="chart"></svg>
   <div class="tooltip" id="tooltip"></div>
   <div id="error"></div>
@@ -285,6 +322,7 @@
     const tooltip = d3.select('#tooltip');
     let g = svg.append('g');
     let zoom;
+    let currentHierarchy = null;
 
     const width = () => window.innerWidth;
     const height = () => window.innerHeight - 60;
@@ -300,6 +338,11 @@
     svg.call(zoom);
 
     document.getElementById('csvInput').addEventListener('change', handleFileSelect);
+    document.getElementById('nodeColumns').addEventListener('change', function() {
+      if (currentHierarchy) {
+        renderChart(currentHierarchy);
+      }
+    });
 
     function loadSample() {
       try {
@@ -319,6 +362,7 @@ Sophie Turner,Ryan Miller,Graphic Designer,Marketing,sophie@company.com,Remote,+
 Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,+1-555-0110,2021-02-01,E011,0,95000,0,"java,spring",4,3.5`;
         const dataObj = parseCSV(sampleCSV);
         const hierarchy = buildHierarchy(dataObj);
+        currentHierarchy = hierarchy;
         renderChart(hierarchy);
         document.getElementById('fileName').textContent = 'sample.csv (default)';
       } catch (err) {
@@ -346,6 +390,7 @@ Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,
         try {
           const dataObj = parseCSV(e.target.result);
           const hierarchy = buildHierarchy(dataObj);
+          currentHierarchy = hierarchy;
           renderChart(hierarchy);
         } catch (err) {
           showError(err.message);
@@ -491,7 +536,8 @@ Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,
       node.each(function(d) {
         const g = d3.select(this);
         const fields = d.data.fields || [];
-        const displayFields = fields.slice(0, 3);
+        const nodeColumnCount = parseInt(document.getElementById('nodeColumns').value) || 3;
+        const displayFields = fields.slice(0, nodeColumnCount);
         const fieldCount = displayFields.length;
         const nodeHeight = fieldCount > 0 ? 50 + (fieldCount - 1) * 18 : 50;
         const nodeY = -nodeHeight / 2;
@@ -511,12 +557,12 @@ Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,
             d3.select(this).attr('stroke', '#4f46e5').attr('stroke-width', 2);
             const fields = d.data.fields || [];
             const columnHeaders = d.data.columnHeaders || [];
-            const extraFields = fields.slice(3).filter(f => f !== '');
+            const extraFields = fields.slice(nodeColumnCount).filter(f => f !== '');
             
             let html = `<div style="font-weight:bold;margin-bottom:8px;">${d.data.name}</div>`;
             if (extraFields.length > 0) {
               extraFields.forEach((field, i) => {
-                const colIdx = i + 3;
+                const colIdx = i + nodeColumnCount;
                 const header = columnHeaders[colIdx] || `Column ${colIdx + 1}`;
                 html += `<div style="margin-top:4px;"><span style="color:#9ca3af;">${header}:</span> ${field}</div>`;
               });
