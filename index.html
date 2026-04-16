@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organization Chart</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+    }
+
+    header {
+      background: white;
+      padding: 1rem 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      color: #1a1a2e;
+    }
+
+    .upload-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: #4f46e5;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: background 0.2s;
+    }
+
+    .file-label:hover {
+      background: #4338ca;
+    }
+
+    #fileName {
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+
+    #chart {
+      width: 100%;
+      height: calc(100vh - 60px);
+    }
+
+    .node rect {
+      fill: white;
+      stroke: #e5e7eb;
+      stroke-width: 1px;
+      rx: 8;
+      ry: 8;
+      transition: all 0.2s;
+    }
+
+    .node:hover rect {
+      stroke: #4f46e5;
+      stroke-width: 2px;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    }
+
+    .node text {
+      font-size: 12px;
+      fill: #1a1a2e;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    .link {
+      fill: none;
+      stroke: #d1d5db;
+      stroke-width: 1.5px;
+    }
+
+    .tooltip {
+      position: absolute;
+      background: #1a1a2e;
+      color: white;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 100;
+      max-width: 300px;
+      max-height: 300px;
+      overflow-y: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .tooltip.visible {
+      opacity: 1;
+    }
+
+    #error {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #dc2626;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    #error.show {
+      display: block;
+    }
+
+    .instructions {
+      color: #9ca3af;
+      font-size: 0.75rem;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Organization Chart</h1>
+    <div class="upload-section">
+      <span class="instructions">CSV needs: name, mentor</span>
+      <div class="file-input-wrapper">
+        <input type="file" id="csvInput" accept=".csv">
+        <label for="csvInput" class="file-label">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 4m4 4l-4-4"/>
+          </svg>
+          Upload CSV
+        </label>
+      </div>
+      <span id="fileName"></span>
+    </div>
+  </header>
+  
+  <svg id="chart"></svg>
+  <div class="tooltip" id="tooltip"></div>
+  <div id="error"></div>
+
+  <script>
+    const svg = d3.select('#chart');
+    const tooltip = d3.select('#tooltip');
+    let g = svg.append('g');
+    let zoom;
+
+    const width = () => window.innerWidth;
+    const height = () => window.innerHeight - 60;
+
+    svg.attr('width', width).attr('height', height);
+
+    zoom = d3.zoom()
+      .scaleExtent([0.1, 3])
+      .on('zoom', (event) => {
+        g.attr('transform', event.transform);
+      });
+
+    svg.call(zoom);
+
+    document.getElementById('csvInput').addEventListener('change', handleFileSelect);
+
+    async function loadSample() {
+      try {
+        const response = await fetch('sample.csv');
+        const text = await response.text();
+        const dataObj = parseCSV(text);
+        const hierarchy = buildHierarchy(dataObj);
+        renderChart(hierarchy);
+        document.getElementById('fileName').textContent = 'sample.csv (default)';
+      } catch (err) {
+        console.error('Failed to load sample:', err);
+      }
+    }
+
+    loadSample();
+
+    function showError(message) {
+      const errorEl = document.getElementById('error');
+      errorEl.textContent = message;
+      errorEl.classList.add('show');
+      setTimeout(() => errorEl.classList.remove('show'), 3000);
+    }
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      document.getElementById('fileName').textContent = file.name;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const dataObj = parseCSV(e.target.result);
+          const hierarchy = buildHierarchy(dataObj);
+          renderChart(hierarchy);
+        } catch (err) {
+          showError(err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function parseCSV(text) {
+      const lines = text.trim().split('\n');
+      if (lines.length < 2) {
+        throw new Error('CSV file is empty or has no data rows');
+      }
+
+      const header = lines[0].split(',').map(h => h.trim());
+      const nameIdx = header.indexOf('name');
+      const mentorIdx = header.indexOf('mentor');
+
+      if (nameIdx === -1) {
+        throw new Error('CSV must have a "name" column');
+      }
+
+      const columnHeaders = header.slice(2, 17);
+
+      const data = [];
+      for (let i = 1; i < lines.length; i++) {
+        const values = parseCSVLine(lines[i]);
+        if (values[nameIdx]) {
+          const fields = [];
+          for (let j = 2; j < Math.min(values.length, 17); j++) {
+            fields.push(values[j] ? values[j].trim() : '');
+          }
+          data.push({
+            name: values[nameIdx].trim(),
+            mentor: mentorIdx !== -1 ? values[mentorIdx]?.trim() || '' : '',
+            fields: fields,
+            columnHeaders: columnHeaders
+          });
+        }
+      }
+
+      return {
+        data: data,
+        columnHeaders: columnHeaders
+      };
+    }
+
+    function parseCSVLine(line) {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          result.push(current);
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      result.push(current);
+      return result;
+    }
+
+    function buildHierarchy(dataObj) {
+      const data = dataObj.data;
+      const nodeMap = new Map();
+      const roots = [];
+
+      data.forEach(row => {
+        if (row.name) {
+          nodeMap.set(row.name, { name: row.name, children: [], fields: row.fields || [], columnHeaders: row.columnHeaders || [] });
+        }
+      });
+
+      data.forEach(row => {
+        const node = nodeMap.get(row.name);
+        if (!node) return;
+
+        if (!row.mentor || row.mentor === '') {
+          roots.push(node);
+        } else {
+          const mentor = nodeMap.get(row.mentor);
+          if (mentor) {
+            mentor.children.push(node);
+          } else {
+            roots.push(node);
+          }
+        }
+      });
+
+      if (roots.length === 0 && nodeMap.size > 0) {
+        const firstNode = nodeMap.values().next().value;
+        roots.push(firstNode);
+      }
+
+      if (roots.length === 0) {
+        throw new Error('No valid data found in CSV');
+      }
+
+      if (roots.length === 1) {
+        return roots[0];
+      }
+
+      return { name: 'Organization', children: roots };
+    }
+
+    function renderChart(rootData) {
+      const root = d3.hierarchy(rootData);
+
+      const treeLayout = d3.tree().nodeSize([200, 150]);
+      treeLayout(root);
+
+      const nodes = root.descendants();
+      const minX = d3.min(nodes, d => d.x);
+      const maxX = d3.max(nodes, d => d.x);
+      const minY = d3.min(nodes, d => d.y);
+      const maxY = d3.max(nodes, d => d.y);
+
+      g.selectAll('*').remove();
+
+      const link = g.selectAll('.link')
+        .data(root.links())
+        .enter()
+        .append('path')
+        .attr('class', 'link')
+        .attr('d', d3.linkVertical()
+          .x(d => d.x)
+          .y(d => d.y));
+
+      const node = g.selectAll('.node')
+        .data(nodes)
+        .enter()
+        .append('g')
+        .attr('class', 'node')
+        .attr('transform', d => `translate(${d.x},${d.y})`);
+
+      const fieldColors = ['#6b7280', '#9ca3af', '#d1d5db'];
+
+      node.each(function(d) {
+        const g = d3.select(this);
+        const fields = d.data.fields || [];
+        const displayFields = fields.slice(0, 3);
+        const fieldCount = displayFields.length;
+        const nodeHeight = fieldCount > 0 ? 50 + (fieldCount - 1) * 18 : 50;
+        const nodeY = -nodeHeight / 2;
+
+        g.append('rect')
+          .attr('x', -75)
+          .attr('y', nodeY)
+          .attr('width', 150)
+          .attr('height', nodeHeight)
+          .attr('fill', 'white')
+          .attr('stroke', '#e5e7eb')
+          .attr('stroke-width', 1)
+          .attr('rx', 8)
+          .attr('ry', 8)
+          .on('mouseenter', function() {
+            d3.select(this).attr('stroke', '#4f46e5').attr('stroke-width', 2);
+          })
+          .on('mouseleave', function() {
+            d3.select(this).attr('stroke', '#e5e7eb').attr('stroke-width', 1);
+          });
+
+        g.append('text')
+          .attr('y', nodeY + 20)
+          .attr('font-size', '15px')
+          .attr('font-weight', 'bold')
+          .attr('fill', '#1a1a2e')
+          .attr('text-anchor', 'middle')
+          .text(d.data.name);
+
+        displayFields.forEach((field, i) => {
+          g.append('text')
+            .attr('y', nodeY + 40 + i * 18)
+            .attr('font-size', '12px')
+            .attr('fill', fieldColors[i])
+            .attr('text-anchor', 'middle')
+            .text(field);
+        });
+      });
+
+      node.on('mouseenter', function(event, d) {
+        const fields = d.data.fields || [];
+        const columnHeaders = d.data.columnHeaders || [];
+        const extraFields = fields.slice(3).filter(f => f !== '');
+        
+        if (extraFields.length > 0) {
+          let html = `<div style="font-weight:bold;margin-bottom:8px;">${d.data.name}</div>`;
+          extraFields.forEach((field, i) => {
+            const colIdx = i + 3;
+            const header = columnHeaders[colIdx] || `Column ${colIdx + 1}`;
+            html += `<div style="margin-top:4px;"><span style="color:#9ca3af;">${header}:</span> ${field}</div>`;
+          });
+          tooltip.html(html)
+            .style('left', (event.pageX + 10) + 'px')
+            .style('top', (event.pageY - 10) + 'px');
+          tooltip.style('display', 'block');
+        }
+      });
+
+      node.on('mousemove', function(event, d) {
+        const fields = d.data.fields || [];
+        const extraFields = fields.slice(3).filter(f => f !== '');
+        
+        if (extraFields.length > 0) {
+          tooltip
+            .style('left', (event.pageX + 10) + 'px')
+            .style('top', (event.pageY - 10) + 'px');
+        }
+      });
+
+      node.on('mouseleave', function() {
+        tooltip.style('display', 'none');
+      });
+
+      const centerX = (minX + maxX) / 2;
+      const centerY = minY / 2;
+
+      svg.call(
+        zoom.transform,
+        d3.zoomIdentity
+          .translate(width() / 2 - centerX, 80)
+          .scale(1)
+      );
+    }
+
+    window.addEventListener('resize', () => {
+      svg.attr('width', width).attr('height', height);
+    });
+  </script>
+</body>
+</html>
