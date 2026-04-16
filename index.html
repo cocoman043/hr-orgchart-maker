@@ -459,14 +459,23 @@
         searchInfo.textContent = `${searchMatches.length} match${searchMatches.length > 1 ? 'es' : ''} found`;
         searchInfo.className = 'has-matches';
         
+        const matchedNodes = new Set(searchMatches.map(m => m.node));
+        
+        nodes.each(function() {
+          const nodeGroup = d3.select(this);
+          if (matchedNodes.has(this)) {
+            nodeGroup.style('opacity', '1');
+            nodeGroup.select('rect')
+              .attr('stroke', '#f59e0b')
+              .attr('stroke-width', 3);
+          } else {
+            nodeGroup.style('opacity', '0.3');
+          }
+        });
+        
         searchMatches.forEach((match, i) => {
-          const nodeGroup = d3.select(match.node);
-          nodeGroup.select('rect')
-            .attr('stroke', '#f59e0b')
-            .attr('stroke-width', 3);
-          
           if (i === 0) {
-            nodeGroup.raise();
+            d3.select(match.node).raise();
           }
         });
 
