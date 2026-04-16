@@ -255,6 +255,34 @@
       color: #9ca3af;
       margin-top: 0.5rem;
     }
+
+    .export-panel {
+      position: fixed;
+      bottom: 1rem;
+      left: 1rem;
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 50;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .export-panel button {
+      background: #4f46e5;
+      color: white;
+      border: none;
+      padding: 0.5rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .export-panel button:hover {
+      background: #4338ca;
+    }
   </style>
 </head>
 <body>
@@ -311,6 +339,11 @@
   <div class="settings-panel">
     <label>Columns on node: <input type="number" id="nodeColumns" value="3" min="0" max="5"></label>
     <div class="info">Cols 3+nodeColumns shown on node, rest on hover</div>
+  </div>
+  
+  <div class="export-panel">
+    <button onclick="exportPNG()">Export PNG</button>
+    <button onclick="exportSVG()">Export SVG</button>
   </div>
   
   <svg id="chart"></svg>
@@ -618,6 +651,55 @@ Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,
     window.addEventListener('resize', () => {
       svg.attr('width', width).attr('height', height);
     });
+
+    function exportPNG() {
+      const svgNode = svg.node();
+      const svgData = new XMLSerializer().serializeToString(svgNode);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        const nodes = g.selectAll('.node');
+        const minX = d3.min(nodes.data(), d => d.x) || 0;
+        const maxX = d3.max(nodes.data(), d => d.x) || 100;
+        const minY = d3.min(nodes.data(), d => d.y) || 0;
+        const maxY = d3.max(nodes.data(), d => d.y) || 100;
+        
+        canvas.width = maxX - minX + 200;
+        canvas.height = maxY - minY + 200;
+        
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 50, 50);
+        
+        const link = document.createElement('a');
+        link.download = 'org-chart.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        URL.revokeObjectURL(url);
+      };
+      
+      img.src = url;
+    }
+
+    function exportSVG() {
+      const svgNode = svg.node();
+      const svgData = new XMLSerializer().serializeToString(svgNode);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      
+      const link = document.createElement('a');
+      link.download = 'org-chart.svg';
+      link.href = url;
+      link.click();
+      
+      URL.revokeObjectURL(url);
+    }
   </script>
 </body>
 </html>
