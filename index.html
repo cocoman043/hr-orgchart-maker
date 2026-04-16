@@ -295,11 +295,23 @@
 
     document.getElementById('csvInput').addEventListener('change', handleFileSelect);
 
-    async function loadSample() {
+    function loadSample() {
       try {
-        const response = await fetch('sample.csv');
-        const text = await response.text();
-        const dataObj = parseCSV(text);
+        const sampleCSV = `name,mentor,title,department,email,location,phone,start_date,manager_id,team_size,salary,budget,skills,tenure_years,performance_rating
+Sarah Chen,,CEO,Executive,sarah@company.com,New York,+1-555-0100,2015-01-15,E001,50,250000,50000,"leadership,strategy",11,5
+Mike Johnson,Sarah Chen,VP Engineering,Engineering,mike@company.com,San Francisco,+1-555-0101,2016-03-20,E002,25,180000,250000,"management,architecture",10,4.5
+Lisa Park,Sarah Chen,VP Marketing,Marketing,lisa@company.com,New York,+1-555-0102,2017-06-10,E003,20,170000,200000,"marketing,branding",9,4.5
+James Wilson,Sarah Chen,VP Sales,Sales,james@company.com,Chicago,+1-555-0111,2016-09-01,E012,30,195000,300000,"sales,negotiation",10,4.5
+David Kim,Lisa Park,Marketing Manager,Marketing,david@company.com,Los Angeles,+1-555-0103,2018-09-01,E004,8,120000,50000,"digital marketing,SEO",7,4
+Tom Brown,Mike Johnson,Engineering Manager,Engineering,tom@company.com,San Francisco,+1-555-0105,2018-04-01,E006,10,130000,75000,"agile,scrum",8,4.5
+Rachel Green,James Wilson,Sales Manager,Sales,rachel@company.com,Chicago,+1-555-0112,2019-05-15,E013,12,115000,80000,"sales management",6,4
+Amy Wu,David Kim,Social Media Lead,Marketing,amy@company.com,Los Angeles,+1-555-0104,2019-02-15,E005,4,85000,20000,"social media,content",6,4
+Jake Wilson,Mike Johnson,Senior Developer,Engineering,jake@company.com,San Francisco,+1-555-0106,2020-01-10,E007,0,140000,0,"python,javascript",5,4
+Emma Davis,David Kim,Content Writer,Marketing,emma@company.com,New York,+1-555-0107,2019-07-22,E008,0,75000,0,"writing,editing",5,3.5
+Ryan Miller,Lisa Park,Brand Manager,Marketing,ryan@company.com,Chicago,+1-555-0108,2018-11-05,E009,5,110000,30000,"branding,design",7,4
+Sophie Turner,Ryan Miller,Graphic Designer,Marketing,sophie@company.com,Remote,+1-555-0109,2020-03-15,E010,0,70000,0,"photoshop,illustrator",5,4
+Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,+1-555-0110,2021-02-01,E011,0,95000,0,"java,spring",4,3.5`;
+        const dataObj = parseCSV(sampleCSV);
         const hierarchy = buildHierarchy(dataObj);
         renderChart(hierarchy);
         document.getElementById('fileName').textContent = 'sample.csv (default)';
