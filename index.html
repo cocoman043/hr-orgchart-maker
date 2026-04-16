@@ -657,23 +657,28 @@ Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,
     });
 
     function exportPNG() {
+      const svgEl = svg.node();
       const bbox = g.node().getBBox();
-      const padding = 50;
-      const width = Math.ceil(bbox.width + padding * 2);
-      const height = Math.ceil(bbox.height + padding * 2);
+      const padding = 80;
+      const viewW = parseInt(svgEl.getAttribute('width')) || window.innerWidth;
+      const viewH = parseInt(svgEl.getAttribute('height')) || (window.innerHeight - 60);
       
       const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = viewW;
+      canvas.height = viewH;
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, width, height);
-      ctx.translate(padding - bbox.x, padding - bbox.y);
+      ctx.fillRect(0, 0, viewW, viewH);
+      ctx.font = '15px -apple-system, BlinkMacSystemFont, sans-serif';
       
-      const svgEl = svg.node();
       const clonedSvg = svgEl.cloneNode(true);
-      clonedSvg.setAttribute('width', width);
-      clonedSvg.setAttribute('height', height);
+      clonedSvg.setAttribute('width', viewW);
+      clonedSvg.setAttribute('height', viewH);
+      clonedSvg.querySelector('style').textContent += `
+        .node text { fill: #1a1a2e; }
+        .node rect { fill: white; stroke: #e5e7eb; }
+        .link { fill: none; stroke: #d1d5db; stroke-width: 1.5px; }
+      `;
       
       const svgData = new XMLSerializer().serializeToString(clonedSvg);
       
@@ -683,8 +688,8 @@ Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,
           ignoreMouse: true,
           ignoreAnimation: true,
           ignoreDimensions: false,
-          offsetX: 0,
-          offsetY: 0
+          scaleWidth: viewW,
+          scaleHeight: viewH
         }).then(function(vm) {
           vm.start();
           const link = document.createElement('a');
