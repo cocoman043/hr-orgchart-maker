@@ -2,11 +2,32 @@ name,mentor,title,department,email,location,phone,start_date,manager_id,team_siz
 Sarah Chen,,CEO,Executive,sarah@company.com,New York,+1-555-0100,2015-01-15,E001,50,250000,50000,"leadership,strategy",11,5
 Mike Johnson,Sarah Chen,VP Engineering,Engineering,mike@company.com,San Francisco,+1-555-0101,2016-03-20,E002,25,180000,250000,"management,architecture",10,4.5
 Lisa Park,Sarah Chen,VP Marketing,Marketing,lisa@company.com,New York,+1-555-0102,2017-06-10,E003,20,170000,200000,"marketing,branding",9,4.5
+James Wilson,Sarah Chen,VP Sales,Sales,james@company.com,Chicago,+1-555-0111,2016-09-01,E012,30,195000,300000,"sales,negotiation",10,4.5
 David Kim,Lisa Park,Marketing Manager,Marketing,david@company.com,Los Angeles,+1-555-0103,2018-09-01,E004,8,120000,50000,"digital marketing,SEO",7,4
-Amy Wu,David Kim,Social Media Lead,Marketing,amy@company.com,Los Angeles,+1-555-0104,2019-02-15,E005,4,85000,20000,"social media,content",6,4
 Tom Brown,Mike Johnson,Engineering Manager,Engineering,tom@company.com,San Francisco,+1-555-0105,2018-04-01,E006,10,130000,75000,"agile,scrum",8,4.5
+Rachel Green,James Wilson,Sales Manager,Sales,rachel@company.com,Chicago,+1-555-0112,2019-05-15,E013,12,115000,80000,"sales management",6,4
+Amy Wu,David Kim,Social Media Lead,Marketing,amy@company.com,Los Angeles,+1-555-0104,2019-02-15,E005,4,85000,20000,"social media,content",6,4
 Jake Wilson,Mike Johnson,Senior Developer,Engineering,jake@company.com,San Francisco,+1-555-0106,2020-01-10,E007,0,140000,0,"python,javascript",5,4
 Emma Davis,David Kim,Content Writer,Marketing,emma@company.com,New York,+1-555-0107,2019-07-22,E008,0,75000,0,"writing,editing",5,3.5
 Ryan Miller,Lisa Park,Brand Manager,Marketing,ryan@company.com,Chicago,+1-555-0108,2018-11-05,E009,5,110000,30000,"branding,design",7,4
 Sophie Turner,Ryan Miller,Graphic Designer,Marketing,sophie@company.com,Remote,+1-555-0109,2020-03-15,E010,0,70000,0,"photoshop,illustrator",5,4
 Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,+1-555-0110,2021-02-01,E011,0,95000,0,"java,spring",4,3.5
+Alex Torres,James Wilson,Account Executive,Sales,alex@company.com,New York,+1-555-0113,2020-08-01,E014,0,80000,25000,"B2B sales",4,4
+Maria Garcia,Tom Brown,Frontend Developer,Engineering,maria@company.com,Remote,+1-555-0114,2021-06-15,E015,0,100000,0,"react,typescript",3,4
+Kevin Park,Rachel Green,Sales Representative,Sales,kevin@company.com,Chicago,+1-555-0115,2021-03-01,E016,0,70000,15000,"sales,crm",3,3.5
+Emily Chen,David Kim,Marketing Analyst,Marketing,emily@company.com,Los Angeles,+1-555-0116,2022-01-10,E017,0,80000,0,"analytics,excel",3,4
+Sam Johnson,Tom Brown,DevOps Engineer,Engineering,sam@company.com,San Francisco,+1-555-0117,2021-09-01,E018,0,120000,0,"aws,kubernetes",4,4.5
+Laura Williams,James Wilson,Inside Sales,Sales,laura@company.com,Remote,+1-555-0118,2022-02-15,E019,0,60000,10000,"telemarketing",2,3.5
+Brian Miller,Tom Brown,QA Engineer,Engineering,brian@company.com,Austin,+1-555-0119,2021-11-01,E020,0,85000,0,"testing,selenium",3,3.5
+Nicole Adams,Ryan Miller,UX Designer,Marketing,nicole@company.com,New York,+1-555-0120,2022-04-01,E021,0,90000,0,"figma,wireframes",2,4
+Daniel Kim,Revenue Operations,Reporting Analyst,Finance,daniel@company.com,San Francisco,+1-555-0121,2022-05-15,E022,0,95000,0,"sql,tableau",2,4
+Jessica Lee,Revenue Operations,Compensation Analyst,Finance,jessica@company.com,Remote,+1-555-0122,2022-07-01,E023,0,85000,0,"hr,compensation",2,3.5
+Michael Scott,Sarah Chen,VP Operations,Operations,michael@company.com,New York,+1-555-0123,2017-01-15,E024,15,160000,100000,"operations,logistics",9,4
+Patricia Quinn,Michael Scott,Operations Manager,Operations,patricia@company.com,Chicago,+1-555-0124,2019-03-01,E025,8,105000,50000,"supply chain",5,4
+Robert Chen,Tom Brown,Software Engineer,Engineering,robert@company.com,San Francisco,+1-555-0125,2022-08-01,E026,0,105000,0,"python,django",3,4
+Sarah Martinez,Revenue Operations,FP&A Analyst,Finance,sarahm@company.com,New York,+1-555-0126,2022-09-15,E027,0,90000,0,"finance,forecasting",2,4
+Thomas Wright,Patricia Quinn,Logistics Coordinator,Operations,thomas@company.com,Chicago,+1-555-0127,2023-01-10,E028,0,65000,0,"logistics,shipping",2,3.5
+Ashley Brown,Michael Scott,Facilities Manager,Operations,ashley@company.com,New York,+1-555-0128,2020-06-01,E029,0,85000,25000,"facilities,security",4,4
+George Taylor,Michael Scott,IT Manager,Operations,george@company.com,San Francisco,+1-555-0129,2018-08-15,E030,5,125000,75000,"it,security",6,4
+Jennifer Lopez,George Taylor,IT Support Specialist,Operations,jennifer@company.com,Remote,+1-555-0130,2021-10-01,E031,0,70000,0,"helpdesk,networking",3,3.5
+Andrew Kim,George Taylor,Systems Administrator,Operations,andrew@company.com,Austin,+1-555-0131,2022-03-01,E032,0,95000,0,"linux,vmware",3,4
