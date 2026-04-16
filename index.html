@@ -257,14 +257,20 @@
     </div>
     <div class="step">
       <div class="step-number">3</div>
-      <div class="step-text">Hover over nodes to see full details</div>
+      <div class="step-text">First 3 columns (title, department, email) show on each node</div>
+    </div>
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-text">Hover over nodes to see all additional columns (phone, skills, etc.)</div>
     </div>
     
     <div class="csv-format">
-      <strong>CSV Format:</strong><br>
-      name,mentor,title,department,email...<br>
-      Alice,,CEO,Engineering,alice@co.com<br>
-      Bob,Alice,VP Eng,Engineering,bob@co.com
+      <strong>CSV Column Order:</strong><br>
+      name,mentor,<strong>col3</strong>,<strong>col4</strong>,<strong>col5</strong>,col6,col7...<br>
+      - col3-5: shown on node<br>
+      - col6+: shown on hover<br><br>
+      Alice,,CEO,Eng,alice@co.com,NYC,+1-555<br>
+      Bob,Alice,VP Eng,Eng,bob@co.com,SF,+1-556
     </div>
     
     <button onclick="document.getElementById('guide').style.display='none'">Got it</button>
