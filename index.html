@@ -658,22 +658,36 @@ Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,
 
     function exportPNG() {
       const svgEl = svg.node();
-      const bbox = g.node().getBBox();
-      const padding = 80;
-      const viewW = parseInt(svgEl.getAttribute('width')) || window.innerWidth;
-      const viewH = parseInt(svgEl.getAttribute('height')) || (window.innerHeight - 60);
+      const gEl = g.node();
+      const bbox = gEl.getBBox();
+      const padding = 100;
+      
+      const fullWidth = Math.ceil(bbox.width + padding * 2 + 200);
+      const fullHeight = Math.ceil(bbox.height + padding * 2 + 200);
+      
+      const centerX = (bbox.x + bbox.width / 2);
+      const centerY = bbox.y + padding;
+      
+      const oldTransform = d3.zoomTransform(svgEl);
+      
+      svg.call(zoom.transform, d3.zoomIdentity.translate(fullWidth / 2 - centerX, padding - bbox.y));
       
       const canvas = document.createElement('canvas');
-      canvas.width = viewW;
-      canvas.height = viewH;
+      canvas.width = fullWidth;
+      canvas.height = fullHeight;
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, viewW, viewH);
-      ctx.font = '15px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillRect(0, 0, fullWidth, fullHeight);
       
       const clonedSvg = svgEl.cloneNode(true);
-      clonedSvg.setAttribute('width', viewW);
-      clonedSvg.setAttribute('height', viewH);
+      clonedSvg.setAttribute('width', fullWidth);
+      clonedSvg.setAttribute('height', fullHeight);
+      clonedSvg.setAttribute('viewBox', `0 0 ${fullWidth} ${fullHeight}`);
+      
+      const gClone = clonedSvg.querySelector('g');
+      if (gClone) {
+        gClone.setAttribute('transform', `translate(${fullWidth / 2 - centerX}, ${padding - bbox.y})`);
+      }
       
       let styleEl = clonedSvg.querySelector('style');
       if (!styleEl) {
@@ -688,14 +702,16 @@ Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,
       
       const svgData = new XMLSerializer().serializeToString(clonedSvg);
       
+      svg.call(zoom.transform, oldTransform);
+      
       const canvgModule = window.canvg.Canvg;
       if (canvgModule) {
         canvgModule.from(ctx, svgData, {
           ignoreMouse: true,
           ignoreAnimation: true,
           ignoreDimensions: false,
-          scaleWidth: viewW,
-          scaleHeight: viewH
+          scaleWidth: fullWidth,
+          scaleHeight: fullHeight
         }).then(function(vm) {
           vm.start();
           const link = document.createElement('a');
@@ -709,24 +725,32 @@ Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,
     }
 
     function exportSVG() {
-      const bbox = g.node().getBBox();
-      const padding = 50;
-      const width = Math.ceil(bbox.width + padding * 2);
-      const height = Math.ceil(bbox.height + padding * 2);
+      const gEl = g.node();
+      const bbox = gEl.getBBox();
+      const padding = 100;
       
-      const svgNode = g.node();
-      const content = svgNode.cloneNode(true);
+      const fullWidth = Math.ceil(bbox.width + padding * 2 + 200);
+      const fullHeight = Math.ceil(bbox.height + padding * 2 + 200);
+      const centerX = (bbox.x + bbox.width / 2);
       
       const exportSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      exportSvg.setAttribute('width', width);
-      exportSvg.setAttribute('height', height);
+      exportSvg.setAttribute('width', fullWidth);
+      exportSvg.setAttribute('height', fullHeight);
       exportSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-      exportSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      exportSvg.setAttribute('viewBox', `0 0 ${fullWidth} ${fullHeight}`);
+      
+      const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+      styleEl.textContent = `
+        .node text { fill: #1a1a2e; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+        .node rect { fill: white; stroke: #e5e7eb; }
+        .link { fill: none; stroke: #d1d5db; stroke-width: 1.5px; }
+      `;
+      exportSvg.appendChild(styleEl);
       
       const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      group.setAttribute('transform', `translate(${padding - bbox.x}, ${padding - bbox.y})`);
+      group.setAttribute('transform', `translate(${fullWidth / 2 - centerX}, ${padding - bbox.y})`);
       
-      Array.from(content.children).forEach(child => group.appendChild(child));
+      Array.from(gEl.children).forEach(child => group.appendChild(child.cloneNode(true)));
       exportSvg.appendChild(group);
       
       const svgData = new XMLSerializer().serializeToString(exportSvg);
