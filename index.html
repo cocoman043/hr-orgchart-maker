@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Organization Chart</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/canvg/3.0.11/umd.js"></script>
   <style>
     * {
       margin: 0;
@@ -655,55 +656,72 @@ Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,
     function exportPNG() {
       const bbox = g.node().getBBox();
       const padding = 50;
-      const width = bbox.width + padding * 2;
-      const height = bbox.height + padding * 2;
+      const width = Math.ceil(bbox.width + padding * 2);
+      const height = Math.ceil(bbox.height + padding * 2);
+      
+      const svgNode = g.node();
+      const content = svgNode.cloneNode(true);
       
       const exportSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       exportSvg.setAttribute('width', width);
       exportSvg.setAttribute('height', height);
       exportSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      exportSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
       
-      const content = g.node().cloneNode(true);
-      content.setAttribute('transform', `translate(${padding - bbox.x}, ${padding - bbox.y})`);
-      exportSvg.appendChild(content);
+      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      group.setAttribute('transform', `translate(${padding - bbox.x}, ${padding - bbox.y})`);
+      
+      Array.from(content.children).forEach(child => group.appendChild(child));
+      exportSvg.appendChild(group);
       
       const svgData = new XMLSerializer().serializeToString(exportSvg);
-      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(svgBlob);
-      
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext('2d');
-      ctx.fillStyle = 'white';
+      ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, width, height);
       
-      const img = new Image();
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0);
-        const link = document.createElement('a');
-        link.download = 'org-chart.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        URL.revokeObjectURL(url);
-      };
-      img.src = url;
+      const canvgModule = window.canvg.Canvg;
+      if (canvgModule) {
+        canvgModule.from(ctx, svgData, {
+          ignoreMouse: true,
+          ignoreAnimation: true,
+          ignoreDimensions: false,
+          scaleWidth: width,
+          scaleHeight: height
+        }).then(function(vm) {
+          vm.start();
+          const link = document.createElement('a');
+          link.download = 'org-chart.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        });
+      } else {
+        alert('Export library not loaded. Please try again.');
+      }
     }
 
     function exportSVG() {
       const bbox = g.node().getBBox();
       const padding = 50;
-      const width = bbox.width + padding * 2;
-      const height = bbox.height + padding * 2;
+      const width = Math.ceil(bbox.width + padding * 2);
+      const height = Math.ceil(bbox.height + padding * 2);
+      
+      const svgNode = g.node();
+      const content = svgNode.cloneNode(true);
       
       const exportSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       exportSvg.setAttribute('width', width);
       exportSvg.setAttribute('height', height);
       exportSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      exportSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
       
-      const content = g.node().cloneNode(true);
-      content.setAttribute('transform', `translate(${padding - bbox.x}, ${padding - bbox.y})`);
-      exportSvg.appendChild(content);
+      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      group.setAttribute('transform', `translate(${padding - bbox.x}, ${padding - bbox.y})`);
+      
+      Array.from(content.children).forEach(child => group.appendChild(child));
+      exportSvg.appendChild(group);
       
       const svgData = new XMLSerializer().serializeToString(exportSvg);
       const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
