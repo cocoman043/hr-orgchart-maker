@@ -554,6 +554,9 @@ Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,
         .enter()
         .append('path')
         .attr('class', 'link')
+        .attr('fill', 'none')
+        .attr('stroke', '#d1d5db')
+        .attr('stroke-width', 1.5)
         .attr('d', d3.linkVertical()
           .x(d => d.x)
           .y(d => d.y));
@@ -659,28 +662,20 @@ Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,
       const width = Math.ceil(bbox.width + padding * 2);
       const height = Math.ceil(bbox.height + padding * 2);
       
-      const svgNode = g.node();
-      const content = svgNode.cloneNode(true);
-      
-      const exportSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      exportSvg.setAttribute('width', width);
-      exportSvg.setAttribute('height', height);
-      exportSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-      exportSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-      
-      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      group.setAttribute('transform', `translate(${padding - bbox.x}, ${padding - bbox.y})`);
-      
-      Array.from(content.children).forEach(child => group.appendChild(child));
-      exportSvg.appendChild(group);
-      
-      const svgData = new XMLSerializer().serializeToString(exportSvg);
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, width, height);
+      ctx.translate(padding - bbox.x, padding - bbox.y);
+      
+      const svgEl = svg.node();
+      const clonedSvg = svgEl.cloneNode(true);
+      clonedSvg.setAttribute('width', width);
+      clonedSvg.setAttribute('height', height);
+      
+      const svgData = new XMLSerializer().serializeToString(clonedSvg);
       
       const canvgModule = window.canvg.Canvg;
       if (canvgModule) {
@@ -688,8 +683,8 @@ Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,
           ignoreMouse: true,
           ignoreAnimation: true,
           ignoreDimensions: false,
-          scaleWidth: width,
-          scaleHeight: height
+          offsetX: 0,
+          offsetY: 0
         }).then(function(vm) {
           vm.start();
           const link = document.createElement('a');
