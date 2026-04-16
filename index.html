@@ -138,6 +138,91 @@
       font-size: 0.75rem;
       margin-top: 0.5rem;
     }
+
+    .guide-overlay {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 12px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      text-align: center;
+      max-width: 480px;
+      z-index: 50;
+    }
+
+    .guide-overlay h2 {
+      font-size: 1.5rem;
+      color: #1a1a2e;
+      margin-bottom: 1.5rem;
+    }
+
+    .guide-overlay p {
+      color: #6b7280;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+
+    .guide-overlay .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+
+    .guide-overlay .step-number {
+      width: 28px;
+      height: 28px;
+      background: #4f46e5;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .guide-overlay .step-text {
+      color: #374151;
+      font-size: 0.9rem;
+    }
+
+    .guide-overlay .csv-format {
+      background: #f3f4f6;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+      text-align: left;
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #4b5563;
+      overflow-x: auto;
+    }
+
+    .guide-overlay .csv-format strong {
+      color: #1a1a2e;
+    }
+
+    .guide-overlay button {
+      background: #4f46e5;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background 0.2s;
+    }
+
+    .guide-overlay button:hover {
+      background: #4338ca;
+    }
   </style>
 </head>
 <body>
@@ -157,6 +242,33 @@
       <span id="fileName"></span>
     </div>
   </header>
+  
+  <div class="guide-overlay" id="guide">
+    <h2>Organization Chart</h2>
+    <p>Visualize your team structure from a CSV file. The sample chart is shown automatically - upload your own to replace it.</p>
+    
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-text">Prepare a CSV with <strong>name</strong> and <strong>mentor</strong> columns (mentor = who they report to)</div>
+    </div>
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-text">Click "Upload CSV" to load your file</div>
+    </div>
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-text">Hover over nodes to see full details</div>
+    </div>
+    
+    <div class="csv-format">
+      <strong>CSV Format:</strong><br>
+      name,mentor,title,department,email...<br>
+      Alice,,CEO,Engineering,alice@co.com<br>
+      Bob,Alice,VP Eng,Engineering,bob@co.com
+    </div>
+    
+    <button onclick="document.getElementById('guide').style.display='none'">Got it</button>
+  </div>
   
   <svg id="chart"></svg>
   <div class="tooltip" id="tooltip"></div>
