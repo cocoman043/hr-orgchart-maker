@@ -674,7 +674,13 @@ Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,
       const clonedSvg = svgEl.cloneNode(true);
       clonedSvg.setAttribute('width', viewW);
       clonedSvg.setAttribute('height', viewH);
-      clonedSvg.querySelector('style').textContent += `
+      
+      let styleEl = clonedSvg.querySelector('style');
+      if (!styleEl) {
+        styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+        clonedSvg.insertBefore(styleEl, clonedSvg.firstChild);
+      }
+      styleEl.textContent += `
         .node text { fill: #1a1a2e; }
         .node rect { fill: white; stroke: #e5e7eb; }
         .link { fill: none; stroke: #d1d5db; stroke-width: 1.5px; }
