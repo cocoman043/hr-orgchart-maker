@@ -653,43 +653,59 @@ Chris Anderson,Tom Brown,Backend Developer,Engineering,chris@company.com,Austin,
     });
 
     function exportPNG() {
-      const svgNode = svg.node();
-      const svgData = new XMLSerializer().serializeToString(svgNode);
+      const bbox = g.node().getBBox();
+      const padding = 50;
+      const width = bbox.width + padding * 2;
+      const height = bbox.height + padding * 2;
+      
+      const exportSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      exportSvg.setAttribute('width', width);
+      exportSvg.setAttribute('height', height);
+      exportSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      
+      const content = g.node().cloneNode(true);
+      content.setAttribute('transform', `translate(${padding - bbox.x}, ${padding - bbox.y})`);
+      exportSvg.appendChild(content);
+      
+      const svgData = new XMLSerializer().serializeToString(exportSvg);
       const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(svgBlob);
       
       const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
       const ctx = canvas.getContext('2d');
-      const img = new Image();
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, width, height);
       
+      const img = new Image();
       img.onload = () => {
-        const nodes = g.selectAll('.node');
-        const minX = d3.min(nodes.data(), d => d.x) || 0;
-        const maxX = d3.max(nodes.data(), d => d.x) || 100;
-        const minY = d3.min(nodes.data(), d => d.y) || 0;
-        const maxY = d3.max(nodes.data(), d => d.y) || 100;
-        
-        canvas.width = maxX - minX + 200;
-        canvas.height = maxY - minY + 200;
-        
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 50, 50);
-        
+        ctx.drawImage(img, 0, 0);
         const link = document.createElement('a');
         link.download = 'org-chart.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
-        
         URL.revokeObjectURL(url);
       };
-      
       img.src = url;
     }
 
     function exportSVG() {
-      const svgNode = svg.node();
-      const svgData = new XMLSerializer().serializeToString(svgNode);
+      const bbox = g.node().getBBox();
+      const padding = 50;
+      const width = bbox.width + padding * 2;
+      const height = bbox.height + padding * 2;
+      
+      const exportSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      exportSvg.setAttribute('width', width);
+      exportSvg.setAttribute('height', height);
+      exportSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      
+      const content = g.node().cloneNode(true);
+      content.setAttribute('transform', `translate(${padding - bbox.x}, ${padding - bbox.y})`);
+      exportSvg.appendChild(content);
+      
+      const svgData = new XMLSerializer().serializeToString(exportSvg);
       const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(svgBlob);
       
