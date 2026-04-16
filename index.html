@@ -102,24 +102,18 @@
     }
 
     .tooltip {
-      position: absolute;
+      position: fixed;
       background: #1a1a2e;
       color: white;
       padding: 0.75rem 1rem;
       border-radius: 6px;
       font-size: 0.8rem;
       pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s;
-      z-index: 100;
+      z-index: 1000;
       max-width: 300px;
       max-height: 300px;
       overflow-y: auto;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-
-    .tooltip.visible {
-      opacity: 1;
     }
 
     #error {
@@ -382,11 +376,36 @@
           .attr('stroke-width', 1)
           .attr('rx', 8)
           .attr('ry', 8)
-          .on('mouseenter', function() {
+          .style('cursor', 'pointer')
+          .on('mouseenter', function(event) {
             d3.select(this).attr('stroke', '#4f46e5').attr('stroke-width', 2);
+            const fields = d.data.fields || [];
+            const columnHeaders = d.data.columnHeaders || [];
+            const extraFields = fields.slice(3).filter(f => f !== '');
+            
+            let html = `<div style="font-weight:bold;margin-bottom:8px;">${d.data.name}</div>`;
+            if (extraFields.length > 0) {
+              extraFields.forEach((field, i) => {
+                const colIdx = i + 3;
+                const header = columnHeaders[colIdx] || `Column ${colIdx + 1}`;
+                html += `<div style="margin-top:4px;"><span style="color:#9ca3af;">${header}:</span> ${field}</div>`;
+              });
+            } else {
+              html += `<div style="color:#9ca3af;font-style:italic;">No additional info</div>`;
+            }
+            tooltip.html(html)
+              .style('left', (event.pageX + 20) + 'px')
+              .style('top', (event.pageY + 20) + 'px');
+            tooltip.style('display', 'block');
+          })
+          .on('mousemove', function(event) {
+            tooltip
+              .style('left', (event.pageX + 20) + 'px')
+              .style('top', (event.pageY + 20) + 'px');
           })
           .on('mouseleave', function() {
             d3.select(this).attr('stroke', '#e5e7eb').attr('stroke-width', 1);
+            tooltip.style('display', 'none');
           });
 
         g.append('text')
@@ -395,6 +414,7 @@
           .attr('font-weight', 'bold')
           .attr('fill', '#1a1a2e')
           .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
           .text(d.data.name);
 
         displayFields.forEach((field, i) => {
@@ -403,42 +423,9 @@
             .attr('font-size', '12px')
             .attr('fill', fieldColors[i])
             .attr('text-anchor', 'middle')
+            .style('pointer-events', 'none')
             .text(field);
         });
-      });
-
-      node.on('mouseenter', function(event, d) {
-        const fields = d.data.fields || [];
-        const columnHeaders = d.data.columnHeaders || [];
-        const extraFields = fields.slice(3).filter(f => f !== '');
-        
-        if (extraFields.length > 0) {
-          let html = `<div style="font-weight:bold;margin-bottom:8px;">${d.data.name}</div>`;
-          extraFields.forEach((field, i) => {
-            const colIdx = i + 3;
-            const header = columnHeaders[colIdx] || `Column ${colIdx + 1}`;
-            html += `<div style="margin-top:4px;"><span style="color:#9ca3af;">${header}:</span> ${field}</div>`;
-          });
-          tooltip.html(html)
-            .style('left', (event.pageX + 10) + 'px')
-            .style('top', (event.pageY - 10) + 'px');
-          tooltip.style('display', 'block');
-        }
-      });
-
-      node.on('mousemove', function(event, d) {
-        const fields = d.data.fields || [];
-        const extraFields = fields.slice(3).filter(f => f !== '');
-        
-        if (extraFields.length > 0) {
-          tooltip
-            .style('left', (event.pageX + 10) + 'px')
-            .style('top', (event.pageY - 10) + 'px');
-        }
-      });
-
-      node.on('mouseleave', function() {
-        tooltip.style('display', 'none');
       });
 
       const centerX = (minX + maxX) / 2;
